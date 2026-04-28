@@ -1,27 +1,51 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/store/useAuthStore";
+import Link from "next/link";
 
 export default function Navbar() {
   const router = useRouter();
-  const logout = useAuthStore((state) => state.logout);
 
   const handleLogout = () => {
-    logout();
+    localStorage.removeItem("isLogin");
     router.push("/login");
   };
 
   return (
-    <div className="flex justify-between items-center bg-white p-4 shadow mb-4 rounded-lg">
-      <h1 className="font-bold text-blue-600">Finance AI</h1>
+    <nav className="flex justify-between items-center bg-white/10 backdrop-blur-lg border border-white/10 px-6 py-4 shadow-xl rounded-2xl w-full">
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
+            <span className="font-bold text-white text-xl">F</span>
+          </div>
+          <h1 className="font-extrabold text-xl tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Finzy</h1>
+        </div>
+
+        <div className="hidden sm:flex items-center gap-4">
+          <Link 
+            href="/" 
+            className="text-gray-400 hover:text-white transition-colors text-sm font-medium"
+          >
+            Home
+          </Link>
+          <Link 
+            href="/analytics" 
+            className="text-gray-400 hover:text-white transition-colors text-sm font-medium"
+          >
+            Analytics
+          </Link>
+        </div>
+      </div>
 
       <button
         onClick={handleLogout}
-        className="bg-red-500 text-white px-3 py-1 rounded"
+        className="group flex items-center gap-2 bg-white/5 hover:bg-red-500/20 border border-white/10 hover:border-red-500/50 text-gray-300 hover:text-red-400 px-4 py-2 rounded-xl transition-all duration-300"
       >
-        Logout
+        <span className="text-sm font-medium">Logout</span>
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
       </button>
-    </div>
+    </nav>
   );
 }
