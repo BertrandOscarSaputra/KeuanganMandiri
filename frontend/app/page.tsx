@@ -9,7 +9,6 @@ import ChatBox from "../components/ChatBox";
 import TransactionCard from "../components/TransactionCard";
 import TransactionForm from "@/components/TransactionForm";
 import EditTransactionModal from "@/components/EditTransactionModal";
-import CategoryChart from "@/components/CategoryChart";
 
 import api from "../services/api";
 
@@ -24,9 +23,23 @@ export default function Home() {
 
   const fetchTransactions = async () => {
     try {
-      const response = await api.get("/transactions");
-      setTransactions(response.data);
-    } catch (error) {
+      const [txResponse, catResponse] = await Promise.all([
+        api.get("/transactions"),
+        api.get("/categories")
+      ]);
+      
+      const categoriesMap = new Map();
+      catResponse.data.forEach((cat: any) => {
+        categoriesMap.set(cat.id, cat);
+      });
+
+      const transactionsWithCategory = txResponse.data.map((t: any) => ({
+        ...t,
+        category: t.categoryId ? categoriesMap.get(t.categoryId) : null
+      }));
+
+      setTransactions(transactionsWithCategory);
+    } catch (error: any) {
       console.error("Gagal mengambil data transaksi:", error);
       if (error?.response?.status === 401 || error?.response?.status === 403) {
         localStorage.removeItem("isLogin");
@@ -210,22 +223,6 @@ export default function Home() {
           <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-6 rounded-3xl shadow-2xl h-[600px] flex flex-col transition-all duration-300 hover:bg-white/[0.12]">
              <h2 className="text-xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-pink-300">Mandiri AI</h2>
             <ChatBox />
-          </div>
-        </div>
-
-        {/* CATEGORY CHARTS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 mb-8">
-          <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-6 rounded-3xl shadow-2xl h-[350px] flex flex-col transition-all duration-300 hover:bg-white/[0.12]">
-            <h2 className="text-xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-emerald-300 to-teal-300">Income by Category</h2>
-            <div className="flex-1 min-h-0">
-               <CategoryChart transactions={transactions} type="income" />
-            </div>
-          </div>
-          <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-6 rounded-3xl shadow-2xl h-[350px] flex flex-col transition-all duration-300 hover:bg-white/[0.12]">
-            <h2 className="text-xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-rose-300 to-red-300">Expense by Category</h2>
-            <div className="flex-1 min-h-0">
-               <CategoryChart transactions={transactions} type="expense" />
-            </div>
           </div>
         </div>
       </div>

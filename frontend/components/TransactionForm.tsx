@@ -93,7 +93,7 @@ export default function TransactionForm({ onAdd }: any) {
       {/* +Add BUTTON */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-8 right-8 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white p-4 rounded-full shadow-lg shadow-purple-500/40 hover:shadow-purple-500/60 transform hover:scale-110 transition-all duration-300 z-40 group flex items-center justify-center w-16 h-16"
+        className="fixed cursor-pointer bottom-8 right-8 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white p-4 rounded-full shadow-lg shadow-purple-500/40 hover:shadow-purple-500/60 transform hover:scale-110 transition-all duration-300 z-40 group flex items-center justify-center w-16 h-16"
         aria-label="Add Transaction"
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 group-hover:rotate-90 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -14,9 +14,23 @@ export default function AnalyticsPage() {
 
   const fetchTransactions = async () => {
     try {
-      const response = await api.get("/transactions");
-      setTransactions(response.data);
-    } catch (error) {
+      const [txResponse, catResponse] = await Promise.all([
+        api.get("/transactions"),
+        api.get("/categories")
+      ]);
+      
+      const categoriesMap = new Map();
+      catResponse.data.forEach((cat: any) => {
+        categoriesMap.set(cat.id, cat);
+      });
+
+      const transactionsWithCategory = txResponse.data.map((t: any) => ({
+        ...t,
+        category: t.categoryId ? categoriesMap.get(t.categoryId) : null
+      }));
+
+      setTransactions(transactionsWithCategory);
+    } catch (error: any) {
       console.error("Gagal mengambil data transaksi:", error);
       if (error?.response?.status === 401 || error?.response?.status === 403) {
         localStorage.removeItem("isLogin");

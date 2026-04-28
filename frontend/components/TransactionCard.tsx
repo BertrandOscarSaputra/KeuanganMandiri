@@ -47,7 +47,14 @@ export default function TransactionCard({ item, onEdit, onDelete }: any) {
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-medium text-gray-200 group-hover:text-white transition-colors text-base truncate">{item.description}</p>
-          <p className="text-xs text-gray-500 mt-1">{formatDateTime(item.timestamp || item.createdAt)}</p>
+          <div className="flex items-center gap-2 mt-1">
+            {item.category && (
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${isIncome ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20' : 'bg-rose-500/10 text-rose-300 border-rose-500/20'}`}>
+                {item.category.name}
+              </span>
+            )}
+            <p className="text-xs text-gray-500">{formatDateTime(item.timestamp || item.createdAt)}</p>
+          </div>
         </div>
       </div>
 

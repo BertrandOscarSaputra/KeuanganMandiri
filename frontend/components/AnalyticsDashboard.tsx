@@ -254,7 +254,8 @@ export default function AnalyticsDashboard({ transactions }: any) {
               <Tooltip
                 formatter={(value: any) => formatRupiah(value)}
                 contentStyle={{ backgroundColor: "rgba(15, 23, 42, 0.9)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px", padding: "12px" }}
-                itemStyle={{ fontWeight: "bold" }}
+                itemStyle={{ fontWeight: "bold", color: "#fff" }}
+                labelStyle={{ color: "#fff" }}
               />
               <Legend wrapperStyle={{ paddingTop: "20px" }} />
               <Area type="monotone" dataKey="income" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" />
@@ -269,6 +270,8 @@ export default function AnalyticsDashboard({ transactions }: any) {
                 formatter={(value: any) => formatRupiah(value)}
                 contentStyle={{ backgroundColor: "rgba(15, 23, 42, 0.9)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px" }}
                 cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                itemStyle={{ fontWeight: "bold", color: "#fff" }}
+                labelStyle={{ color: "#fff" }}
               />
               <Legend wrapperStyle={{ paddingTop: "20px" }} />
               <Bar dataKey="income" name="Income" fill="#10b981" radius={[4, 4, 0, 0]} />
@@ -282,6 +285,8 @@ export default function AnalyticsDashboard({ transactions }: any) {
               <Tooltip
                 formatter={(value: any) => formatRupiah(value)}
                 contentStyle={{ backgroundColor: "rgba(15, 23, 42, 0.9)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px" }}
+                itemStyle={{ fontWeight: "bold", color: "#fff" }}
+                labelStyle={{ color: "#fff" }}
               />
               <Legend wrapperStyle={{ paddingTop: "20px" }} />
               <Line type="monotone" dataKey="income" stroke="#10b981" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
@@ -334,6 +339,8 @@ export default function AnalyticsDashboard({ transactions }: any) {
                 <Tooltip 
                   formatter={(value: any) => formatRupiah(value)}
                   contentStyle={{ backgroundColor: "rgba(15, 23, 42, 0.9)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px" }}
+                  itemStyle={{ fontWeight: "bold", color: "#fff" }}
+                  labelStyle={{ color: "#fff" }}
                 />
                 <Legend layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ color: "#e2e8f0", fontSize: "12px" }} iconType="circle" />
               </PieChart>
@@ -357,6 +364,8 @@ export default function AnalyticsDashboard({ transactions }: any) {
                 <Tooltip 
                   formatter={(value: any) => formatRupiah(value)}
                   contentStyle={{ backgroundColor: "rgba(15, 23, 42, 0.9)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px" }}
+                  itemStyle={{ fontWeight: "bold", color: "#fff" }}
+                  labelStyle={{ color: "#fff" }}
                 />
                 <Legend layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ color: "#e2e8f0", fontSize: "12px" }} iconType="circle" />
               </PieChart>
@@ -387,6 +396,8 @@ export default function AnalyticsDashboard({ transactions }: any) {
               <Tooltip 
                 formatter={(value: any) => formatRupiah(value)}
                 contentStyle={{ backgroundColor: "rgba(15, 23, 42, 0.9)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px" }}
+                itemStyle={{ fontWeight: "bold", color: "#fff" }}
+                labelStyle={{ color: "#fff" }}
               />
               <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ color: "#e2e8f0" }} />
             </PieChart>
