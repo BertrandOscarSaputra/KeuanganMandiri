@@ -69,7 +69,7 @@ export default function TransactionForm({ onAdd }: any) {
                 type="number"
                 placeholder="e.g. 50000"
                 value={amount}
-                onChange={(e) => setAmount(Number(e.target.value))}
+                onChange={(e) => setAmount(e.target.value === "" ? "" : Number(e.target.value))}
                 className="border border-gray-300 p-2.5 w-full rounded-lg text-sm focus:ring-2 focus:ring-[#2E76EF] focus:border-[#2E76EF] outline-none"
                 required
               />
