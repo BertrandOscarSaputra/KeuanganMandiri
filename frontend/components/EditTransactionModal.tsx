@@ -20,9 +20,10 @@ export default function EditTransactionModal({ transaction, isOpen, onClose, onS
       setType(transaction.type);
       setCategoryId(transaction.categoryId || "");
       
-      // Parse timestamp
-      if (transaction.timestamp) {
-        const date = new Date(transaction.timestamp);
+      // Parse date/timestamp
+      const txDate = transaction.date || transaction.createdAt || transaction.timestamp;
+      if (txDate) {
+        const date = new Date(txDate);
         setTransactionDate(date.toISOString().split('T')[0]);
         setTransactionTime(date.toTimeString().slice(0, 5));
       } else {
@@ -50,13 +51,12 @@ export default function EditTransactionModal({ transaction, isOpen, onClose, onS
     setLoading(true);
 
     try {
-      const dateTimeString = `${transactionDate}T${transactionTime}:00`;
       const response = await api.put(`/transactions/${transaction.id}`, {
         amount: Number(amount),
         description,
         type,
         categoryId: categoryId ? Number(categoryId) : null,
-        timestamp: dateTimeString
+        date: transactionDate
       });
 
       onSave(response.data);

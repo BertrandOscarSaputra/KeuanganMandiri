@@ -57,13 +57,12 @@ export default function TransactionForm({ onAdd }: any) {
     setLoading(true);
 
     try {
-      const dateTimeString = `${transactionDate}T${transactionTime}:00`;
       const response = await api.post("/transactions", {
         amount: Number(amount),
         description,
         type,
         categoryId: categoryId ? Number(categoryId) : null,
-        timestamp: dateTimeString
+        date: transactionDate
       });
 
       onAdd(response.data);
