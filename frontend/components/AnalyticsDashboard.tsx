@@ -123,36 +123,48 @@ export default function AnalyticsDashboard({ transactions }: any) {
       .sort((a, b) => b.value - a.value);
   }, [transactions]);
 
-  // Data for Monthly Trend
-  const monthlyData = useMemo(() => {
-    const monthMap: {
+  const [timeRange, setTimeRange] = useState<"monthly" | "weekly">("monthly");
+
+  // Data for Monthly/Weekly Trend
+  const timeSeriesData = useMemo(() => {
+    const timeMap: {
       [key: string]: { income: number; expense: number };
     } = {};
 
     transactions.forEach((t: any) => {
       const date = new Date(t.timestamp || t.createdAt);
-      const monthKey = `${date.getFullYear()}-${String(
-        date.getMonth() + 1
-      ).padStart(2, "0")}`;
+      
+      let key = "";
+      if (timeRange === "monthly") {
+        key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      } else {
+        // Calculate week of year (simple version)
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+        const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1)/7);
+        key = `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, "0")}`;
+      }
 
-      if (!monthMap[monthKey]) {
-        monthMap[monthKey] = { income: 0, expense: 0 };
+      if (!timeMap[key]) {
+        timeMap[key] = { income: 0, expense: 0 };
       }
 
       if (t.type === "income") {
-        monthMap[monthKey].income += t.amount;
+        timeMap[key].income += t.amount;
       } else {
-        monthMap[monthKey].expense += t.amount;
+        timeMap[key].expense += t.amount;
       }
     });
 
-    return Object.entries(monthMap)
+    return Object.entries(timeMap)
       .sort()
-      .map(([month, data]) => ({
-        month,
+      .map(([period, data]) => ({
+        period,
         ...data,
       }));
-  }, [transactions]);
+  }, [transactions, timeRange]);
 
   // Data for Type Distribution
   const typeData = useMemo(() => {
@@ -210,10 +222,26 @@ export default function AnalyticsDashboard({ transactions }: any) {
         </div>
       </div>
 
-      {/* Monthly Trend with Variations */}
+      {/* Time Series Trend with Variations */}
       <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-2xl shadow-lg relative">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-bold text-white">Monthly Cash Flow</h3>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+          <div className="flex items-center gap-4">
+            <h3 className="text-lg font-bold text-white">Cash Flow Trend</h3>
+            <div className="flex bg-slate-800 border border-slate-700 rounded-lg overflow-hidden p-1">
+              <button
+                onClick={() => setTimeRange("weekly")}
+                className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${timeRange === 'weekly' ? 'bg-slate-600 text-white' : 'text-gray-400 hover:text-white'}`}
+              >
+                Weekly
+              </button>
+              <button
+                onClick={() => setTimeRange("monthly")}
+                className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${timeRange === 'monthly' ? 'bg-slate-600 text-white' : 'text-gray-400 hover:text-white'}`}
+              >
+                Monthly
+              </button>
+            </div>
+          </div>
           <div className="flex bg-slate-800 border border-slate-700 rounded-lg overflow-hidden p-1">
             <button
               onClick={() => setTrendChartType("area")}
@@ -237,7 +265,7 @@ export default function AnalyticsDashboard({ transactions }: any) {
         </div>
         <ResponsiveContainer width="100%" height={350}>
           {trendChartType === "area" ? (
-            <AreaChart data={monthlyData}>
+            <AreaChart data={timeSeriesData}>
               <defs>
                 <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/>
@@ -249,7 +277,7 @@ export default function AnalyticsDashboard({ transactions }: any) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-              <XAxis dataKey="month" stroke="#9ca3af" tickLine={false} axisLine={false} dy={10} />
+              <XAxis dataKey="period" stroke="#9ca3af" tickLine={false} axisLine={false} dy={10} />
               <YAxis stroke="#9ca3af" tickFormatter={(v) => `Rp${v/1000}k`} tickLine={false} axisLine={false} />
               <Tooltip
                 formatter={(value: any) => formatRupiah(value)}
@@ -262,9 +290,9 @@ export default function AnalyticsDashboard({ transactions }: any) {
               <Area type="monotone" dataKey="expense" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorExpense)" />
             </AreaChart>
           ) : trendChartType === "bar" ? (
-            <BarChart data={monthlyData} barSize={20}>
+            <BarChart data={timeSeriesData} barSize={20}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-              <XAxis dataKey="month" stroke="#9ca3af" tickLine={false} axisLine={false} dy={10} />
+              <XAxis dataKey="period" stroke="#9ca3af" tickLine={false} axisLine={false} dy={10} />
               <YAxis stroke="#9ca3af" tickFormatter={(v) => `Rp${v/1000}k`} tickLine={false} axisLine={false} />
               <Tooltip
                 formatter={(value: any) => formatRupiah(value)}
@@ -278,9 +306,9 @@ export default function AnalyticsDashboard({ transactions }: any) {
               <Bar dataKey="expense" name="Expense" fill="#ef4444" radius={[4, 4, 0, 0]} />
             </BarChart>
           ) : (
-            <LineChart data={monthlyData}>
+            <LineChart data={timeSeriesData}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-              <XAxis dataKey="month" stroke="#9ca3af" tickLine={false} axisLine={false} dy={10} />
+              <XAxis dataKey="period" stroke="#9ca3af" tickLine={false} axisLine={false} dy={10} />
               <YAxis stroke="#9ca3af" tickFormatter={(v) => `Rp${v/1000}k`} tickLine={false} axisLine={false} />
               <Tooltip
                 formatter={(value: any) => formatRupiah(value)}

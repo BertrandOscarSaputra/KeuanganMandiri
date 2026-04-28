@@ -97,24 +97,54 @@ export default function Home() {
 
   const balance = income - expense;
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCategory, setFilterCategory] = useState('');
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+
   // Filter transactions berdasarkan tab yang aktif
   const getFilteredTransactions = () => {
+    let filtered = transactions;
+
+    if (searchQuery) {
+      filtered = filtered.filter(t => t.description?.toLowerCase().includes(searchQuery.toLowerCase()));
+    }
+
+    if (filterCategory) {
+      filtered = filtered.filter(t => t.category?.name === filterCategory);
+    }
+
     switch (activeTab) {
       case 'expense':
-        return transactions.filter((t) => t.type === 'expense');
+        filtered = filtered.filter((t) => t.type === 'expense');
+        break;
       case 'income':
-        return transactions.filter((t) => t.type === 'income');
+        filtered = filtered.filter((t) => t.type === 'income');
+        break;
       case 'latest':
         // Sort by newest first (descending by timestamp)
-        return [...transactions].sort((a, b) => {
+        return [...filtered].sort((a, b) => {
           const dateA = new Date(a.timestamp || a.createdAt).getTime();
           const dateB = new Date(b.timestamp || b.createdAt).getTime();
           return dateB - dateA;
         }).slice(0, 10); // Show only 10 latest
-      default:
-        return transactions;
     }
+
+    // Apply sorting for other tabs
+    return [...filtered].sort((a, b) => {
+      const dateA = new Date(a.timestamp || a.createdAt).getTime();
+      const dateB = new Date(b.timestamp || b.createdAt).getTime();
+      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+    });
   };
+
+  const uniqueCategories = Array.from(
+    new Set(
+      transactions
+        .filter(t => (activeTab === 'expense' ? t.type === 'expense' : activeTab === 'income' ? t.type === 'income' : true))
+        .map(t => t.category?.name)
+        .filter(Boolean)
+    )
+  );
 
   const filteredTransactions = getFilteredTransactions();
 
@@ -155,38 +185,87 @@ export default function Home() {
               </h2>
             </div>
 
-            {/* TAB BUTTONS */}
-            <div className="flex gap-2 mb-6 pb-4 border-b border-white/10">
-              <button
-                onClick={() => setActiveTab('latest')}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                  activeTab === 'latest'
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-purple-500/40'
-                    : 'bg-white/5 text-gray-400 hover:bg-white/10'
-                }`}
-              >
-                ⏱️ Terbaru
-              </button>
-              <button
-                onClick={() => setActiveTab('expense')}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                  activeTab === 'expense'
-                    ? 'bg-rose-500/30 text-rose-300 border border-rose-500/50'
-                    : 'bg-white/5 text-gray-400 hover:bg-white/10'
-                }`}
-              >
-                📉 Pengeluaran
-              </button>
-              <button
-                onClick={() => setActiveTab('income')}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                  activeTab === 'income'
-                    ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/50'
-                    : 'bg-white/5 text-gray-400 hover:bg-white/10'
-                }`}
-              >
-                📈 Pemasukan
-              </button>
+            {/* CONTROLS AREA */}
+            <div className="flex flex-col gap-4 mb-6 pb-5 border-b border-white/10">
+              {/* ROW 1: TABS */}
+              <div className="flex gap-3 overflow-x-auto pb-2 sm:pb-0 hide-scrollbar w-full">
+                <button
+                  onClick={() => setActiveTab('latest')}
+                  className={`px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all ${
+                    activeTab === 'latest'
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-purple-500/40'
+                      : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                  }`}
+                >
+                  ⏱️ Terbaru
+                </button>
+                <button
+                  onClick={() => setActiveTab('expense')}
+                  className={`px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all ${
+                    activeTab === 'expense'
+                      ? 'bg-rose-500/30 text-rose-300 border border-rose-500/50'
+                      : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                  }`}
+                >
+                  📉 Pengeluaran
+                </button>
+                <button
+                  onClick={() => setActiveTab('income')}
+                  className={`px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all ${
+                    activeTab === 'income'
+                      ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/50'
+                      : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                  }`}
+                >
+                  📈 Pemasukan
+                </button>
+              </div>
+              
+              {/* ROW 2: FILTERS */}
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 w-full">
+                <div className="sm:col-span-6 md:col-span-5 relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg className="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  <input 
+                    type="text" 
+                    placeholder="Search by description..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all shadow-inner"
+                  />
+                </div>
+                <div className="sm:col-span-3 md:col-span-4 relative">
+                  <select 
+                    value={filterCategory}
+                    onChange={(e) => setFilterCategory(e.target.value)}
+                    className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all cursor-pointer appearance-none shadow-inner"
+                  >
+                    <option value="">All Categories</option>
+                    {uniqueCategories.map((catName: any, idx: number) => (
+                      <option key={idx} value={catName}>{catName}</option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-400">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  </div>
+                </div>
+                <div className="sm:col-span-3 md:col-span-3 relative">
+                  <select 
+                    value={sortOrder}
+                    onChange={(e) => setSortOrder(e.target.value as 'newest' | 'oldest')}
+                    className="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all cursor-pointer appearance-none shadow-inner"
+                  >
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-400">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <TransactionForm onAdd={addTransaction} />
