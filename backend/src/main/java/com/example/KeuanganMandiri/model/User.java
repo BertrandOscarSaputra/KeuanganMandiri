@@ -26,6 +26,10 @@ public class User {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Lob
+    @Column(name = "profile_picture", columnDefinition="LONGTEXT")
+    private String profilePicture;
+
     public User() {}
 
     @PrePersist
@@ -51,4 +55,7 @@ public class User {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public String getProfilePicture() { return profilePicture; }
+    public void setProfilePicture(String profilePicture) { this.profilePicture = profilePicture; }
 }

@@ -7,19 +7,33 @@ import { useEffect, useState } from "react";
 export default function Navbar() {
   const router = useRouter();
   const [initial, setInitial] = useState("U");
+  const [profilePicture, setProfilePicture] = useState("");
 
   useEffect(() => {
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      try {
-        const parsedUser = JSON.parse(userData);
-        if (parsedUser.name) {
-          setInitial(parsedUser.name.charAt(0).toUpperCase());
+    const loadUserData = () => {
+      const userData = localStorage.getItem("user");
+      if (userData) {
+        try {
+          const parsedUser = JSON.parse(userData);
+          if (parsedUser.name) {
+            setInitial(parsedUser.name.charAt(0).toUpperCase());
+          }
+          if (parsedUser.profilePicture) {
+            setProfilePicture(parsedUser.profilePicture);
+          } else {
+            setProfilePicture("");
+          }
+        } catch (e) {
+          console.error("Error parsing user data in Navbar", e);
         }
-      } catch (e) {
-        console.error("Error parsing user data in Navbar", e);
       }
-    }
+    };
+
+    loadUserData();
+
+    // Listen for custom event from Profile page
+    window.addEventListener("profilePictureUpdated", loadUserData);
+    return () => window.removeEventListener("profilePictureUpdated", loadUserData);
   }, []);
 
   const handleLogout = () => {
@@ -33,8 +47,12 @@ export default function Navbar() {
     <nav className="flex justify-between items-center bg-white/10 backdrop-blur-lg border border-white/10 px-6 py-4 shadow-xl rounded-2xl w-full">
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/30 border border-white/20">
-            <span className="font-bold text-white text-xl">{initial}</span>
+          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/30 border border-white/20 overflow-hidden">
+            {profilePicture ? (
+              <img src={profilePicture} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <span className="font-bold text-white text-xl">{initial}</span>
+            )}
           </div>
           <h1 className="font-extrabold text-xl tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Finzy</h1>
         </div>

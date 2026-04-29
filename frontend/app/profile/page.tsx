@@ -1,13 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
+import api from "@/services/api";
 
 export default function ProfilePage() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ name: string; email: string; profilePicture?: string } | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -22,6 +25,7 @@ export default function ProfilePage() {
           setUser({
             name: parsedUser.name || "Unknown User",
             email: parsedUser.email || "No email provided",
+            profilePicture: parsedUser.profilePicture || "",
           });
         } catch (e) {
           console.error("Error parsing user data", e);
@@ -43,6 +47,52 @@ export default function ProfilePage() {
     router.push("/login");
   };
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Please upload an image file");
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) { // 2MB limit
+      alert("File size should be less than 2MB");
+      return;
+    }
+
+    setUploading(true);
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64String = reader.result as string;
+      
+      try {
+        await api.put("/users/profile-picture", { base64Image: base64String });
+        
+        // Update local state and localStorage
+        if (user) {
+          const updatedUser = { ...user, profilePicture: base64String };
+          setUser(updatedUser);
+          
+          const rawLocalUser = localStorage.getItem("user");
+          if (rawLocalUser) {
+            const localUserObj = JSON.parse(rawLocalUser);
+            localUserObj.profilePicture = base64String;
+            localStorage.setItem("user", JSON.stringify(localUserObj));
+            // Dispatch a custom event so Navbar can update instantly
+            window.dispatchEvent(new Event("profilePictureUpdated"));
+          }
+        }
+      } catch (error) {
+        console.error("Failed to upload profile picture", error);
+        alert("Failed to update profile picture");
+      } finally {
+        setUploading(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-950 text-white relative overflow-hidden">
       {/* Dynamic Background Elements */}
@@ -61,11 +111,36 @@ export default function ProfilePage() {
             
             <div className="flex flex-col sm:flex-row items-center gap-8">
               {/* Avatar */}
-              <div className="relative">
-                <div className="w-32 h-32 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/30 border-4 border-white/10 relative z-10">
-                  <span className="text-5xl font-extrabold text-white shadow-sm">
-                    {user ? getInitial(user.name) : "?"}
-                  </span>
+              <div className="relative group/avatar cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleFileChange} 
+                  accept="image/*" 
+                  className="hidden" 
+                />
+                <div className="w-32 h-32 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/30 border-4 border-white/10 relative z-10 overflow-hidden">
+                  {user?.profilePicture ? (
+                    <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-5xl font-extrabold text-white shadow-sm">
+                      {user ? getInitial(user.name) : "?"}
+                    </span>
+                  )}
+                  {/* Hover overlay for changing picture */}
+                  <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity duration-300">
+                    {uploading ? (
+                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span className="text-xs text-white font-medium">Change</span>
+                      </>
+                    )}
+                  </div>
                 </div>
                 <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 blur-xl opacity-40 animate-pulse"></div>
               </div>
