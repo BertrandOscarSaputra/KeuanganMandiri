@@ -25,7 +25,11 @@ export default function TransactionForm({ onAdd }: any) {
     try {
       const response = await api.get(`/categories?type=${selectedType}`);
       setCategories(response.data);
-      setCategoryId(""); // Selalu reset kategori agar user harus memilih secara manual
+      if (response.data.length > 0) {
+        setCategoryId(response.data[0].id);
+      } else {
+        setCategoryId("");
+      }
     } catch (error) {
       console.error("Gagal mengambil kategori", error);
     }
@@ -71,7 +75,6 @@ export default function TransactionForm({ onAdd }: any) {
       setAmount("");
       setDescription("");
       setType("expense");
-      setCategoryId("");
       setTransactionDate(new Date().toISOString().split('T')[0]);
       setTransactionTime(new Date().toTimeString().slice(0, 5));
       setIsOpen(false);

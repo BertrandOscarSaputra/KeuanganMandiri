@@ -70,7 +70,8 @@ export default function Home() {
   }, [router]);
 
   const addTransaction = (data: any) => {
-    fetchTransactions();
+    // Karena kita sudah kirim ke API di TransactionForm, kita bisa tambah ke state atau panggil fetch lagi
+    setTransactions((prev) => [...prev, data]);
   };
 
   const handleEditTransaction = (transaction: any) => {
@@ -79,7 +80,9 @@ export default function Home() {
   };
 
   const handleSaveEdit = (updatedTransaction: any) => {
-    fetchTransactions();
+    setTransactions((prev) =>
+      prev.map((t) => (t.id === updatedTransaction.id ? updatedTransaction : t))
+    );
   };
 
   const handleDeleteTransaction = async (transactionId: number) => {
