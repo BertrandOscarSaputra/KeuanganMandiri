@@ -20,6 +20,7 @@ export default function Home() {
   const [editingTransaction, setEditingTransaction] = useState<any>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'expense' | 'income' | 'latest'>('latest');
+  const [userName, setUserName] = useState<string>("");
 
   const fetchTransactions = async () => {
     try {
@@ -55,6 +56,15 @@ export default function Home() {
     if (!isLogin) {
       router.push("/login");
     } else {
+      const userData = localStorage.getItem("user");
+      if (userData) {
+        try {
+          const parsedUser = JSON.parse(userData);
+          if (parsedUser.name) setUserName(parsedUser.name);
+        } catch (e) {
+          console.error("Error parsing user data", e);
+        }
+      }
       fetchTransactions();
     }
   }, [router]);
@@ -160,7 +170,7 @@ export default function Home() {
 
         <div className="mb-8 mt-4 animate-fade-in-up">
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">Dashboard</h1>
-          <p className="text-gray-400 mt-1">Welcome back, track your finances effortlessly.</p>
+          <p className="text-gray-400 mt-1">Welcome back{userName ? `, ${userName}` : ''}, track your finances effortlessly.</p>
         </div>
 
         {/* SUMMARY */}

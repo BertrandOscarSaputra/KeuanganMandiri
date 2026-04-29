@@ -2,12 +2,30 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function Navbar() {
   const router = useRouter();
+  const [initial, setInitial] = useState("U");
+
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      try {
+        const parsedUser = JSON.parse(userData);
+        if (parsedUser.name) {
+          setInitial(parsedUser.name.charAt(0).toUpperCase());
+        }
+      } catch (e) {
+        console.error("Error parsing user data in Navbar", e);
+      }
+    }
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("isLogin");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     router.push("/login");
   };
 
@@ -15,8 +33,8 @@ export default function Navbar() {
     <nav className="flex justify-between items-center bg-white/10 backdrop-blur-lg border border-white/10 px-6 py-4 shadow-xl rounded-2xl w-full">
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
-            <span className="font-bold text-white text-xl">F</span>
+          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/30 border border-white/20">
+            <span className="font-bold text-white text-xl">{initial}</span>
           </div>
           <h1 className="font-extrabold text-xl tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Finzy</h1>
         </div>
@@ -33,6 +51,12 @@ export default function Navbar() {
             className="text-gray-400 hover:text-white transition-colors text-sm font-medium"
           >
             Analytics
+          </Link>
+          <Link 
+            href="/profile" 
+            className="text-gray-400 hover:text-white transition-colors text-sm font-medium"
+          >
+            Profile
           </Link>
         </div>
       </div>
